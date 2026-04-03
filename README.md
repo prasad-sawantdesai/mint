@@ -26,6 +26,45 @@ Install the package from PyPi:
 mint
 ```
 
+## Development
+Clone all the projects
+```bash
+mkdir mintdev
+cd  mintdev
+git clone -b develop git@github.com:iplot-viz/iplotlogging.git
+git clone -b develop git@github.com:iplot-viz/iplotprocessing.git
+git clone -b develop git@github.com:iplot-viz/iplotdataaccess.git
+git clone -b develop git@github.com:iplot-viz/iplotwidgets.git
+git clone -b develop git@github.com:iplot-viz/iplotlib.git
+git clone -b develop git@github.com:iplot-viz/mint.git
+```
+Create virtual environment
+```bash
+python -m venv devenv
+source devenv/bin/activate
+```
+
+
+Install all packages with the editable option
+```bash
+cd iplotlogging;pip install -e .
+cd ../iplotprocessing;pip install -e .
+cd ../iplotdataaccess;pip install -e .
+cd ../iplotwidgets;pip install -e .
+cd ../iplotlib;pip install -e .
+cd ../mint;pip install -e .
+```
+
+Set the IPLOT_SOURCES_CONFIG environment variable to point to mydatasources.cfg
+This configuration file is generally stored in the mint repository under the mint directory
+```bash
+export IPLOT_SOURCES_CONFIG=./mint/mint/mydatasources.cfg
+```
+
+Start the application
+```bash
+mint
+```
 
 ## Contributing
 
