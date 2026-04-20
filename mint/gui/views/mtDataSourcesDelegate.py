@@ -46,6 +46,24 @@ class MTDataSourcesDelegate(QStyledItemDelegate):
         )
 
 
+class MTCalibratedDelegate(QStyledItemDelegate):
+    def createEditor(self, parent: QWidget, option: QStyleOptionViewItem, index: QModelIndex) -> QWidget:
+        combobox = QComboBox(parent)
+        combobox.addItems(["false", "true"])
+        return combobox
+
+    def setEditorData(self, editor: QComboBox, index: QModelIndex):
+        value = str(index.data(Qt.ItemDataRole.EditRole)).lower()
+        loc = editor.findText(value)
+        editor.setCurrentIndex(loc if loc >= 0 else 0)
+
+    def setModelData(self, editor: QComboBox, model: QAbstractItemModel, index: QModelIndex):
+        model.setData(index, editor.currentText(), Qt.ItemDataRole.EditRole)
+
+    def updateEditorGeometry(self, editor: QComboBox, option: QStyleOptionViewItem, index: QModelIndex):
+        editor.setGeometry(option.rect)
+
+
 class MTPlotTypeDelegate(QStyledItemDelegate):
     def __init__(self, plot_types: list, parent: typing.Optional[QObject] = None):
         super().__init__(parent=parent)

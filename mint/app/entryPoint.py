@@ -47,6 +47,11 @@ def run_app(q_app: QApplication, args=None):
 
                 mpl_canvas = MatplotlibParser()
                 mpl_canvas.export_image(canvas_filename, canvas=canvas_exported, **kwargs)
+            elif impl.lower() == "pyqt":
+                from iplotlib.impl.pyqtgraph.pyQtGraphCanvas import PyQtGraphParser
+
+                pg_canvas = PyQtGraphParser()
+                pg_canvas.export_image(canvas_filename, canvas=canvas_exported, **kwargs)
         except FileNotFoundError:
             logger.error(f"Unable to open file: {canvas_filename}")
 

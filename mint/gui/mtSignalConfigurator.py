@@ -32,7 +32,7 @@ from iplotWidgets.consoleWidget.consoleWidget import ConsoleWidget
 from mint.gui.mtSignalToolBar import MTSignalsToolBar
 from mint.gui.mtFindReplace import FindReplaceDialog
 from mint.gui.views import MTDataSourcesDelegate, MTSignalItemView
-from mint.gui.views.mtDataSourcesDelegate import MTPlotTypeDelegate
+from mint.gui.views.mtDataSourcesDelegate import MTCalibratedDelegate, MTPlotTypeDelegate
 from mint.models import MTSignalsModel
 from mint.models.mtSignalsModel import Waypoint
 from mint.models.utils import mtBlueprintParser as mtBp
@@ -211,6 +211,7 @@ class MTSignalConfigurator(QWidget):
         #  MTSignalItemView(PROC_VIEW_NAME, view_type=QTreeView, parent=self)]
 
         self._ds_delegate = MTDataSourcesDelegate(data_sources, self)
+        self._cal_delegate = MTCalibratedDelegate(self)
         self._pt_delegate = MTPlotTypeDelegate(
             ["PlotXY", "PlotContour", "PlotXYWithSlider", "PlotContourWithSlider", "PlotImage"], self)
         self._tabs = QTabWidget(parent=self)
@@ -224,7 +225,8 @@ class MTSignalConfigurator(QWidget):
             widget.import_dict(NEAT_VIEW.get(widget.windowTitle()))
             self._tabs.addTab(widget, widget.windowTitle())
             widget.view().setItemDelegateForColumn(0, self._ds_delegate)
-            widget.view().setItemDelegateForColumn(14, self._pt_delegate)
+            widget.view().setItemDelegateForColumn(6, self._cal_delegate)
+            widget.view().setItemDelegateForColumn(15, self._pt_delegate)
             widget.view().setSortingEnabled(True)
 
         self._tabs.currentChanged.connect(self.on_current_view_changed)

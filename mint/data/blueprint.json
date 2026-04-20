@@ -80,6 +80,11 @@
         "type_name": "bool",
         "default": false
     },
+    "Calibrated": {
+        "code_name": "calibrated",
+        "type_name": "bool",
+        "default": false
+    },
     "PlotType": {
         "label": "Plot type",
         "code_name": "plot_type",

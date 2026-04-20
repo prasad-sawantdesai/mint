@@ -255,8 +255,17 @@ class MTSignalsModel(QAbstractItemModel):
         self._table = self._table[(self._table[columns].isnull().sum(1) + (self._table[columns] == "").sum(1)) < 14]
 
     def accommodate(self, df: pd.DataFrame):
-        # Accommodate for missing columns in df.
+        # Add missing blueprint columns with defaults (backward compatibility)
         columns = list(mtBP.get_column_names(self._blueprint))
+        for col_name in columns:
+            if col_name not in df.columns:
+                # Find the blueprint key for this column name
+                for k, v in self._blueprint.items():
+                    if mtBP.get_column_name(self._blueprint, k) == col_name and 'default' in v:
+                        df[col_name] = v['default']
+                        break
+
+        # Accommodate for unknown columns in df.
         for df_column_name in df.columns:
             if df_column_name not in columns:
                 if df_column_name == self.ROWUID_COLNAME:
@@ -557,6 +566,34 @@ class MTSignalsModel(QAbstractItemModel):
                                     pulse = element
                                     idx = 2
 
+                                # Resolve special pulse numbers (0 = last, -N = N-th previous)
+                                pulse_parts = pulse.rsplit("/", 1)
+                                pulse_num_str = pulse_parts[-1] if len(pulse_parts) > 1 else pulse
+                                try:
+                                    n = int(pulse_num_str)
+                                except ValueError:
+                                    n = 1  # non-numeric → not a relative pulse
+                                if n <= 0 and inp['DS'] in self.data_sources:
+                                    ds = AppDataAccess.da.get_data_source(inp['DS'])
+                                    prefix = pulse_parts[0] + "/" if len(pulse_parts) > 1 else ""
+                                    # If no prefix, infer category from global pulse
+                                    if not prefix and default_value and default_value != '' and default_value != ['']:
+                                        global_pulse = default_value[0] if isinstance(default_value, list) else default_value
+                                        global_parts = str(global_pulse).rsplit("/", 1)
+                                        if len(global_parts) > 1:
+                                            prefix = global_parts[0] + "/"
+                                    search = prefix + "*" if prefix else "*:*/*"
+                                    all_pulses = ds.get_pulses_df(pattern=search)
+                                    if not all_pulses.empty:
+                                        idx = n - 1  # 0→-1, -N→-(N+1)
+                                        if abs(idx) > len(all_pulses):
+                                            logger.warning(
+                                                f"Requested pulse '{pulse_num_str}' but only {len(all_pulses)} "
+                                                f"pulse(s) available in category '{prefix or '*'}' "
+                                                f"in the table row [{table_row}]")
+                                        else:
+                                            pulse = str(all_pulses.iloc[idx]['Pulse'])
+
                                 # Check each pulse
                                 if inp['DS'] in self.data_sources:
                                     if not AppDataAccess.da.get_data_source(inp['DS']).get_pulses_df(
@@ -587,6 +624,9 @@ class MTSignalsModel(QAbstractItemModel):
                                         value = default_value
                                     else:
                                         value = ['']
+                            else:
+                                # Use resolved pulses (handles 0/-1 special values)
+                                value = elements[2]
 
                         else:
                             value = default_value
